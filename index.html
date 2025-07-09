@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Karnali Academy of Health Sciences Trauma Register - Orthopaedics Department</title>
+    <link rel="stylesheet" href="index.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script type="importmap">
+{
+  "imports": {
+    "@google/genai": "https://esm.sh/@google/genai@^1.4.0"
+  }
+}
+</script>
+    <script src='https://cdn.jsdelivr.net/npm/tesseract.js@5.1.0/dist/tesseract.min.js'></script>
+<link rel="stylesheet" href="/index.css">
+</head>
+<body>
+    <div id="app-container">
+        <!-- Login View -->
+        <div id="login-view" class="view">
+            <div class="login-box">
+                <!-- <img src="https://i.imgur.com/gYqgA0m.png" alt="KAHS Logo" class="logo"> Placeholder logo -->
+                <div class="logo-placeholder">Karnali Academy of Health Sciences</div>
+                <h2>Karnali Academy of Health Sciences Trauma Register</h2>
+                <h3>Orthopaedics Department - Comprehensive Trauma Documentation System</h3>
+                <form id="login-form">
+                    <div class="input-group">
+                        <label for="username">Username</label>
+                        <input type="text" id="username" name="username" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" name="password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-full-width">Login</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Main Application View (Admin/User) -->
+        <div id="main-app-view" class="view" style="display: none;"> <!-- Initially hidden -->
+            <header>
+                <div class="header-title-subtitle">
+                    <h1>Karnali Academy of Health Sciences Trauma Register</h1>
+                    <p class="subtitle">Department of Orthopaedics - Trauma Documentation & Management System</p>
+                </div>
+                <div id="user-info">
+                    <span id="welcome-message"></span>
+                    <button id="logout-btn" class="btn btn-danger btn-sm"> <!-- ID corrected to logout-btn -->
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </button>
+                </div>
+            </header>
+            <nav id="app-nav">
+                <ul>
+                    <li><a href="#" data-view="patient-details" class="nav-link active-link"><i class="fas fa-user-injured"></i> Patient Details</a></li>
+                    <li><a href="#" data-view="treatment-investigations" id="treatment-investigations-link" class="nav-link"><i class="fas fa-notes-medical"></i> Treatment & Investigations</a></li>
+                    <li><a href="#" data-view="admin-dashboard" class="nav-link" id="admin-dashboard-link" style="display: none;"><i class="fas fa-tachometer-alt"></i> Admin Dashboard</a></li>
+                    <li><a href="#" data-view="ocr-error-log" class="nav-link" id="ocr-error-log-link" style="display: none;"><i class="fas fa-exclamation-triangle"></i> OCR Error Log / Review Queue</a></li>
+                </ul>
+            </nav>
+            
+            <main id="app-content">
+                <!-- Content will be dynamically inserted here for Admin/User -->
+            </main>
+        </div>
+
+        <!-- Nurse Upload View -->
+        <div id="nurse-upload-view" class="view" style="display: none;">
+             <header>
+                <div class="header-title-subtitle">
+                    <h1>KAHS Trauma Register - Upload Portal</h1>
+                    <p class="subtitle" id="nurse-role-display">NURSE / DATA ENTRY PERSONNEL</p>
+                </div>
+                <div id="nurse-user-info">
+                    <span id="nurse-welcome-message"></span>
+                    <button id="nurse-logout-button" class="btn btn-danger btn-sm">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </button>
+                </div>
+            </header>
+            <nav id="nurse-app-nav">
+                <ul>
+                    <li><a href="#" data-nurse-view="patientDocUpload" class="nurse-nav-link active-link"><i class="fas fa-file-medical"></i> Upload Patient Document</a></li>
+                    <li><a href="#" data-nurse-view="labReportUpload" class="nurse-nav-link"><i class="fas fa-flask"></i> Lab Report Upload</a></li>
+                    <li><a href="#" data-nurse-view="viewLabHistory" class="nurse-nav-link"><i class="fas fa-history"></i> View Previous Reports</a></li>
+                </ul>
+            </nav>
+            <main id="nurse-app-content">
+                <!-- Nurse-specific UI for sections will be dynamically inserted here -->
+            </main>
+        </div>
+    </div>
+
+    <!-- Modal Structure (General Purpose) -->
+    <div id="modal-container" class="modal-container" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title">Modal Title</h3>
+                <button id="modal-close-button" class="modal-close-btn">&times;</button>
+            </div>
+            <div id="modal-body" class="modal-body">
+                <!-- Modal content goes here -->
+            </div>
+            <div id="modal-footer" class="modal-footer" style="display: none;">
+                <button id="modal-confirm-button" class="btn btn-primary">Confirm</button>
+                <button id="modal-cancel-button" class="btn btn-secondary">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast-notification" class="toast">
+        <span id="toast-message"></span>
+    </div>
+
+    <!-- Camera Modal for Patient Photo / Document Scan -->
+    <div id="camera-modal" class="modal-container" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="camera-modal-title">Capture Photo</h3>
+                <button id="camera-modal-close-button" class="modal-close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <video id="camera-feed" autoplay playsinline></video>
+                <canvas id="photo-canvas" style="display:none;"></canvas>
+                <img id="captured-photo-preview-modal" src="#" alt="Captured Photo" style="display:none;">
+            </div>
+            <div class="modal-footer">
+                <button id="capture-photo-btn" class="btn btn-primary"><i class="fas fa-camera"></i> Capture</button>
+                <button id="save-captured-photo-btn" class="btn btn-success" style="display:none;"><i class="fas fa-save"></i> Save Photo</button>
+                <button id="retake-photo-btn" class="btn btn-secondary" style="display:none;"><i class="fas fa-redo"></i> Retake</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="index.tsx"></script>
+<script type="module" src="/index.tsx"></script>
+</body>
+</html>
